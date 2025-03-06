@@ -1,0 +1,278 @@
+data:
+  dataset: pdb
+  loader:
+    num_workers: 8
+    prefetch_factor: 10
+  sampler:
+    max_batch_size: 64
+    max_num_res_squared: 400000
+  task: hallucination
+interpolant:
+  min_t: 0.01
+  separate_t: false
+  provide_kappa: false
+  hierarchical_t: false
+  codesign_separate_t: true
+  codesign_forward_fold_prop: 0.1
+  codesign_inverse_fold_prop: 0.1
+  rots:
+    corrupt: true
+    train_schedule: linear
+    sample_schedule: exp
+    exp_rate: 10
+  trans:
+    corrupt: true
+    batch_ot: true
+    train_schedule: linear
+    sample_schedule: linear
+    sample_temp: 1.0
+    vpsde_bmin: 0.1
+    vpsde_bmax: 20.0
+    potential: null
+    potential_t_scaling: false
+    rog:
+      weight: 10.0
+      cutoff: 5.0
+  aatypes:
+    corrupt: true
+    schedule: linear
+    schedule_exp_rate: -3
+    temp: 0.1
+    noise: 0.0
+    do_purity: true
+    train_extra_mask: 0.0
+    interpolant_type: masking
+  sampling:
+    num_timesteps: 100
+    do_sde: false
+  self_condition: ${model.edge_features.self_condition}
+  twisting:
+    use: false
+folding:
+  seq_per_sample: 8
+  own_device: false
+  folding_model: esmf
+  pmpnn_path: ./ProteinMPNN/
+  pt_hub_dir: ./.cache/torch/
+experiment:
+  debug: false
+  seed: 123
+  num_devices: 4
+  warm_start: flow-matching/ckpt/se3-fm/reproduce_v2/2023-12-28_14-23-11/epoch=59-step=28380.ckpt
+  warm_start_cfg_override: false
+  raw_state_dict_reload: null
+  training:
+    mask_plddt: true
+    bb_atom_scale: 0.1
+    trans_scale: 0.1
+    aatypes_loss_weight: 1.0
+    aatypes_label_smoothing: 0.0
+    aatypes_loss_mean_or_sum: mean
+    aatypes_loss_use_likelihood_weighting: false
+    translation_loss_weight: 2.0
+    t_normalize_clip: 0.9
+    rotation_loss_weights: 1.0
+    aux_loss_weight: 0.0
+    aux_loss_use_bb_loss: true
+    aux_loss_use_pair_loss: true
+    aux_loss_t_pass: 0.5
+  wandb:
+    name: separate_t
+    project: se3-fm
+  optimizer:
+    lr: 0.0001
+  trainer:
+    overfit_batches: 0
+    min_epochs: 1
+    max_epochs: 200
+    accelerator: gpu
+    log_every_n_steps: 1
+    deterministic: false
+    strategy: ddp
+    check_val_every_n_epoch: 6
+    accumulate_grad_batches: 2
+  checkpointer:
+    dirpath: ./
+    save_last: true
+    save_top_k: 3
+    every_n_epochs: 4
+    monitor: valid/codesign_bb_rmsd
+    mode: min
+  inference_dir: ./inference_outputs/./weights/last/unconditional/run_2024-03-02_11-49-28
+shared:
+  seed: 123
+  max_cache_size: 100000
+  samples_per_eval_length: 5
+  num_eval_lengths: 8
+  max_eval_length: 256
+  min_motif_percent: 0.05
+  max_motif_percent: 0.5
+pdb_dataset:
+  seed: ${shared.seed}
+  csv_path: proteinblobs/multiflow/metadata/pdb_metadata.csv
+  cluster_path: proteinblobs/multiflow/metadata/pdb.clusters
+  test_set_pdb_ids_path: null
+  max_cache_size: ${shared.max_cache_size}
+  cache_num_res: 0
+  inpainting_percent: 1.0
+  add_plddt_mask: false
+  max_eval_length: ${shared.max_eval_length}
+  redesigned_csv_path: proteinblobs/multiflow/metadata/pdb_redesigned.csv
+  use_redesigned: true
+  synthetic_csv_path: proteinblobs/multiflow/metadata/distillation_metadata.csv
+  synthetic_cluster_path: proteinblobs/multiflow/metadata/distillation.clusters
+  use_synthetic: true
+  samples_per_eval_length: ${shared.samples_per_eval_length}
+  num_eval_lengths: ${shared.num_eval_lengths}
+  filter:
+    max_num_res: 384
+    min_num_res: 60
+    max_coil_percent: 0.5
+    rog_quantile: 0.96
+    oligomeric:
+    - monomeric
+    num_chains:
+    - 1
+  min_motif_percent: ${shared.min_motif_percent}
+  max_motif_percent: ${shared.max_motif_percent}
+  is_mixed: false
+pdb_post2021_dataset:
+  seed: ${shared.seed}
+  csv_path: proteinblobs/multiflow/metadata/test_set_metadata.csv
+  cluster_path: proteinblobs/multiflow/metadata/test_set_clusters.csv
+  test_set_pdb_ids_path: proteinblobs/multiflow/metadata/test_set_pdb_ids.csv
+  max_cache_size: ${shared.max_cache_size}
+  cache_num_res: 0
+  add_plddt_mask: False
+  max_eval_length: ${shared.max_eval_length}
+  redesigned_csv_path: null
+  use_redesigned: False
+
+  synthetic_csv_path: null
+  synthetic_cluster_path: null
+  use_synthetic: False
+
+  # Eval parameters
+  samples_per_eval_length: ${shared.samples_per_eval_length}
+  num_eval_lengths: ${shared.num_eval_lengths}
+
+  # Filtering
+  filter:
+    max_num_res: 400
+    min_num_res: 50
+    max_coil_percent: 0.5
+    rog_quantile: 0.96
+    oligomeric: ['monomeric']
+    num_chains: [1]
+model:
+  node_embed_size: 256
+  edge_embed_size: 128
+  symmetric: false
+  aatype_pred: true
+  transformer_dropout: 0.2
+  aatype_pred_num_tokens: 21
+  node_features:
+    c_s: ${model.node_embed_size}
+    c_pos_emb: 128
+    c_timestep_emb: 128
+    max_num_res: 2000
+    timestep_int: 1000
+    embed_chain: false
+    embed_aatype: true
+    use_mlp: true
+    aatype_pred_num_tokens: ${model.aatype_pred_num_tokens}
+  edge_features:
+    single_bias_transition_n: 2
+    c_s: ${model.node_embed_size}
+    c_p: ${model.edge_embed_size}
+    relpos_k: 64
+    feat_dim: 64
+    num_bins: 22
+    self_condition: true
+    embed_chain: false
+    embed_diffuse_mask: true
+  ipa:
+    c_s: ${model.node_embed_size}
+    c_z: ${model.edge_embed_size}
+    c_hidden: 16
+    no_heads: 8
+    no_qk_points: 8
+    no_v_points: 12
+    seq_tfmr_num_heads: 4
+    seq_tfmr_num_layers: 4
+    num_blocks: 8
+    dropout: 0.0
+  use_sequence_net: false
+  sequence_net:
+    num_layers: 6
+    use_init_embed: true
+    use_init_rigid: false
+    use_local_attention: false
+    init_node_embed: ${model.node_embed_size}
+    init_edge_embed: ${model.edge_embed_size}
+    ipa:
+      c_s: 128
+      c_z: 64
+      c_hidden: 128
+      no_heads: 4
+      no_qk_points: 8
+      no_v_points: 8
+      dropout: 0.2
+inference:
+  predict_dir: ./inference_outputs/
+  inference_subdir: run_${now:%Y-%m-%d}_${now:%H-%M-%S}
+  task: unconditional
+  seed: 123
+  use_gpu: true
+  num_gpus: 1
+  saved_ckpt_dir: ./saved_ckpts/frameflow
+  unconditional_ckpt_path: ./weights/last.ckpt
+  also_fold_pmpnn_seq: true
+  write_sample_trajectories: false
+  interpolant:
+    min_t: 0.01
+    provide_kappa: false
+    codesign_separate_t: false
+    rots:
+      corrupt: true
+      sample_schedule: exp
+      exp_rate: 10
+    trans:
+      corrupt: true
+      pre_align: true
+      train_schedule: linear
+      sample_schedule: linear
+      sample_temp: 1.0
+      potential: null
+      potential_t_scaling: false
+      rog:
+        weight: 20.0
+        cutoff: 5.0
+    aatypes:
+      corrupt: true
+      schedule: linear
+      schedule_exp_rate: -3
+      temp: 0.1
+      noise: 20.0
+      do_purity: true
+      interpolant_type: masking
+    sampling:
+      num_timesteps: 500
+      do_sde: false
+    self_condition: true
+  pmpnn_dir: ./ProteinMPNN
+  folding:
+    seq_per_sample: 8
+    folding_model: esmf
+    own_device: false
+    pmpnn_path: ./ProteinMPNN/
+    pt_hub_dir: ./.cache/torch/
+    colabfold_path: path/to/colabfold-conda/bin/colabfold_batch
+  samples:
+    samples_per_length: 100
+    num_batch: 1
+    length_subset:
+    - 256
+    min_length: 60
+    max_length: 256
+    length_step: 1
