@@ -32,7 +32,7 @@ pip install 'openfold @ git+https://github.com/aqlaboratory/openfold.git@5484c38
 pip install matplotlib==3.7.2
 pip install pydssp biotite omegaconf wandb
 pip install numpy==1.21.2
-# pip install numpy throws an errror for contourpy but that is fine
+# pip install numpy throws an error for contourpy but that is fine
 pip install torch-scatter -f https://data.pyg.org/whl/torch-1.12.1+cu113
 pip3 install -U scikit-learn
 pip install gpustat
@@ -114,7 +114,7 @@ python train.py --batch_size 8 --designability --designability_freq 5 --num_desi
 
 ## License
 
-Code and model weights are released under an NVIDIA license for non-commercial or research purposes only. Please see the [LICENSE.txt](https://github.com/NVlabs/protcomposer/blob/main/LICENSE.txt) file.
+ProtComposer source code is licensed under Apache 2.0 and the model is licensed under the NVIDIA Open Model License. Please see the [LICENSE.txt](https://github.com/NVlabs/protcomposer/blob/main/LICENSE.txt) file.
 
 
 ## Citation
