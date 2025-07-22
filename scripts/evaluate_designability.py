@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os, torch
 from biotite.sequence.io import fasta
 from proteinblobs.designability_utils import run_pmpnn, get_aligned_rmsd

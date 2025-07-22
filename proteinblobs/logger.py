@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import yaml, logging, socket, os, sys
 model_dir = os.environ.get("MODEL_DIR", "./workdir/default")
 def get_logger(name):
