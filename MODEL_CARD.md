@@ -8,7 +8,9 @@ ProtComposer is a generative model that generates novel protein structures. It l
 This model is ready for commercial use.
 
 ### License/Terms of Use:
-ProtComposer source code is licensed under Apache 2.0 and the model is licensed under the [NVIDIA Open Model License](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/). By using ProtComposer, you accept the terms and conditions of this license.
+**GOVERNING TERMS:** The software and materials are governed by the [Apache 2.0 license](https://www.apache.org/licenses/LICENSE-2.0.txt); except for the model which is governed by the [NVIDIA Open Model License Agreement](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/). 
+
+ADDITIONAL INFORMATION: [MIT License](https://github.com/jasonkyuyim/multiflow/blob/main/LICENSE) for Multiflow, the [base model](https://github.com/jasonkyuyim/multiflow).
 
 **Deployment Geography:** Global
 
